@@ -207,7 +207,9 @@ def url_fix_host(urlparts, encoding):
         if i != -1:
             netloc, urlparts[3] = netloc.split('?', 1)
         # path
-        urlparts[2] = urllib.parse.unquote(urlparts[2], encoding=encoding)
+        if not urlparts[2].startswith("/http"):
+            # do not unquote Imgix web proxy image paths
+            urlparts[2] = urllib.parse.unquote(urlparts[2], encoding=encoding)
     if userpass:
         # append AT for easy concatenation
         userpass += "@"
@@ -310,7 +312,9 @@ def url_norm(url, encoding):
     # quote parts again
     urlparts[0] = urllib.parse.quote(urlparts[0])  # scheme
     urlparts[1] = urllib.parse.quote(urlparts[1], safe='@:')  # host
-    urlparts[2] = urllib.parse.quote(urlparts[2], safe=_nopathquote_chars)  # path
+    if not urlparts[2].startswith("/http"):
+        # do not re-quote Imgix web proxy image paths
+        urlparts[2] = urllib.parse.quote(urlparts[2], safe=_nopathquote_chars)  # path
     if not urlparts[0].startswith("feed"):
         # unencode colon in http[s]:// in wayback path
         urlparts[2] = url_fix_wayback_query(urlparts[2])
